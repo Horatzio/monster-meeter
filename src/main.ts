@@ -9,9 +9,6 @@ async function main() {
     return;
   }
 
-  const vertexShader = document.getElementById('vertexShader')?.textContent || '';
-  const fragmentShader = document.getElementById('fragmentShader')?.textContent || '';
-
-  await Engine.run(container, vertexShader, fragmentShader);
+  await Engine.run({ container });
 }
 main();

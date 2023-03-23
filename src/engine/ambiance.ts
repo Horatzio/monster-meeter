@@ -28,12 +28,12 @@ export class Ambiance {
         const uniforms = {
             'topColor': { value: new THREE.Color(0x0077ff) },
             'bottomColor': { value: new THREE.Color(0xffffff) },
-            'offset': { value: 33 },
-            'exponent': { value: 0.6 }
+            'offset': { value: 5 },
+            'exponent': { value: 0.2 }
         };
         uniforms['topColor'].value.copy(hemiLight.color);
 
-        const fog = new THREE.Fog(uniforms['bottomColor'].value);
+        const fog = new THREE.Fog(uniforms['bottomColor'].value, 250);
         const { vertexShader, fragmentShader } = ShaderLoader.loadShaders();
 
         const skyGeo = new THREE.SphereGeometry(4000, 32, 15);

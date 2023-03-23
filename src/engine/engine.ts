@@ -5,7 +5,6 @@ import { Ambiance } from './ambiance';
 import { GameComponent } from './components/game-component';
 import { Player } from './components/player';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import { GroundTile } from './components/ground-tile';
 
 interface EngineSettings {
   container: HTMLElement,
@@ -51,8 +50,8 @@ class Engine {
       this.container.appendChild(renderer.domElement);
 
       const controls = new OrbitControls(this.camera, this.renderer.domElement);
-      controls.minDistance = 200;
-      controls.maxDistance = 500;
+      controls.minDistance = 5;
+      controls.maxDistance = 200;
       controls.maxPolarAngle = Math.PI / 2;
       this.controls = controls;
 
@@ -106,13 +105,13 @@ class Engine {
         controls: this.controls
       });
 
-      const ground = await GroundTile.create({
-        loader
-      })
-      
+      const world = await loader.loadAsync('models/gltf/world.glb');
+      const worldScale = 50;
+      world.scene.scale.set(worldScale, worldScale, worldScale)
+      this.scene.add(world.scene);
+
       return [
         player,
-        ground
       ]
     }
 }

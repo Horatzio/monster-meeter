@@ -17,9 +17,9 @@ export class Player extends GameComponent {
         const gltf = await loader.loadAsync(Player.modelPath);
         const obj = gltf.scene.children[0];
 
-        const scale = 10;
+        const scale = 4;
         obj.scale.set(scale, scale, scale);
-        obj.position.set(0, 12.5, 0);
+        obj.position.set(0, 5, 0);
 
         obj.castShadow = true;
         obj.receiveShadow = true;
@@ -41,7 +41,7 @@ export class Player extends GameComponent {
     }
 
     private camera: THREE.Camera;
-    private speed: number = 100;
+    private speed: number = 50;
     private keysPressed: Set<string> = new Set();
     private targetPosition: THREE.Vector3 = new THREE.Vector3();
 

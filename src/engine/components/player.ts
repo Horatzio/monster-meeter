@@ -11,7 +11,7 @@ interface PlayerLoadSettings {
 
 export class Player extends GameComponent {
 
-    private static modelPath = 'models/gltf/Chicken.gltf';
+    private static modelPath = 'models/gltf/Cat.gltf';
 
     public static async create({ loader, controls, camera }: PlayerLoadSettings): Promise<Player> {
         const gltf = await loader.loadAsync(Player.modelPath);
@@ -19,7 +19,7 @@ export class Player extends GameComponent {
 
         const scale = 4;
         obj.scale.set(scale, scale, scale);
-        obj.position.set(0, 5, 0);
+        obj.position.set(0, 0, 0);
 
         obj.castShadow = true;
         obj.receiveShadow = true;
@@ -28,7 +28,7 @@ export class Player extends GameComponent {
         controls.update();
 
         const mixer = new THREE.AnimationMixer(obj);
-        mixer.clipAction(gltf.animations[1]).setDuration(1).play();
+        mixer.clipAction(gltf.animations[1]).setDuration(1.5).play();
 
         const player = new Player();
         player.obj = obj;

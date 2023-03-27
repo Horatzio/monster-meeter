@@ -5,6 +5,7 @@ import { Ambiance } from './ambiance';
 import { GameComponent } from './components/game-component';
 import { Player } from './components/player';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { Character } from './components/character';
 
 interface EngineSettings {
   container: HTMLElement,
@@ -53,6 +54,7 @@ class Engine {
       controls.minDistance = 5;
       controls.maxDistance = 200;
       controls.maxPolarAngle = Math.PI / 2;
+      controls.enablePan = false;
       this.controls = controls;
 
       // event listeners
@@ -105,13 +107,53 @@ class Engine {
         controls: this.controls
       });
 
-      const world = await loader.loadAsync('models/gltf/world.glb');
+      const world = await loader.loadAsync('models/gltf/world.gltf');
       const worldScale = 50;
-      world.scene.scale.set(worldScale, worldScale, worldScale)
-      this.scene.add(world.scene);
+      const worldScene = world.scene;
+      worldScene.scale.set(worldScale, worldScale, worldScale)
+      this.scene.add(worldScene);
+
+      const characterNames = [
+        'ninja',
+        'pinkblob',
+        'dog',
+        'wizard',
+        'mushroom',
+      ];
+
+      const characters = await Promise.all(characterNames.map(async (name) => {
+        const placeholder = worldScene.children.find(child => child.name === `placeholder-${name}`);
+
+        if (!placeholder) {
+          throw new Error(`No placeholder for ${name}`);
+        }
+
+        const position = new THREE.Vector3();
+        const rotation = new THREE.Euler();
+
+        if (placeholder.rotation) {
+          rotation.copy(placeholder.rotation);
+        }
+
+        if (placeholder.position) {
+          position.copy(placeholder.position);
+          position.multiplyScalar(worldScale);
+        }
+
+        const characterScale = 3;
+
+        return await Character.create({
+          name,
+          rotation,
+          position,
+          loader,
+          scale: characterScale
+        });
+      }));
 
       return [
         player,
+        ...characters,
       ]
     }
 }

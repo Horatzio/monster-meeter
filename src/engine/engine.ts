@@ -6,6 +6,7 @@ import { GameComponent } from './components/game-component';
 import { Player } from './components/player';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { Character } from './components/character';
+import * as CANNON from 'cannon';
 
 interface EngineSettings {
   container: HTMLElement,
@@ -32,6 +33,7 @@ class Engine {
     private animationMixers: AnimationMixer[] = [];
     private controls: OrbitControls;
     private components: GameComponent[] = [];
+    private physicsWorld: CANNON.World;
 
     private async initialize() {
       this.clock = new THREE.Clock();
@@ -57,6 +59,17 @@ class Engine {
       controls.enablePan = false;
       this.controls = controls;
 
+      const world = new CANNON.World();
+      world.gravity.set(0, 9.82, 0); // m/s²
+      this.physicsWorld = world;
+
+      const ground = new CANNON.Body({
+        mass: 1000000000,
+        shape: new CANNON.Plane(),
+      });
+
+      this.physicsWorld.addBody(ground);
+
       // event listeners
       window.addEventListener('resize', this.onWindowResize);
 
@@ -64,6 +77,7 @@ class Engine {
 
       for(const component of components) {
         this.scene.add(component.getObject());
+        this.physicsWorld.addBody(component.getBody());
         const animation = component.getAnimation();
         if (animation) {
           this.animationMixers.push(animation);
@@ -87,6 +101,7 @@ class Engine {
     }
 
     private async update(delta: number) {
+      this.physicsWorld.step(1 / 60, delta);
       await Promise.all(this.components.map((c) => c.update(delta)));
       this.controls.update();
     }

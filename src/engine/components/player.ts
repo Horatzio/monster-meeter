@@ -1,7 +1,9 @@
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { GameComponent } from "./game-component";
 import * as THREE from "three";
+import * as CANNON from "cannon";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { ThreeVector3ToCannonVec3 } from "../convert";
 
 interface PlayerLoadSettings {
     loader: GLTFLoader,
@@ -30,10 +32,27 @@ export class Player extends GameComponent {
         const mixer = new THREE.AnimationMixer(obj);
         mixer.clipAction(gltf.animations[1]).setDuration(1.5).play();
 
+        // Compute the model's bounding box
+        const bbox = new THREE.Box3().setFromObject(obj);
+        // Compute the model's dimensions
+        const size = new THREE.Vector3();
+        bbox.getSize(size);
+        size.multiply(obj.scale);
+        // Create a Cannon.js box shape with the model's dimensions
+        const boxHalfExtents = new CANNON.Vec3(size.x / 2, size.y / 2, size.z / 2);
+        const boxShape = new CANNON.Box(boxHalfExtents);
+        // Create a Cannon.js body with the box shape
+        const boxBody = new CANNON.Body({ mass: 1000000 });
+        boxBody.addShape(boxShape);
+        // Set the body's position to match the model's position
+        boxBody.position.copy(ThreeVector3ToCannonVec3(obj.position));
+
         const player = new Player();
         player.obj = obj;
         player.animation = mixer;
         player.camera = camera;
+        player.body = boxBody;
+        player.body.position.copy(new CANNON.Vec3(obj.position.x, obj.position.y, obj.position.z))
         window.addEventListener('keydown', (event) => player.onKeyDown(event));
         window.addEventListener('keyup', (event) => player.onKeyUp(event));
 
@@ -54,6 +73,9 @@ export class Player extends GameComponent {
     }
 
     public async update(delta: number): Promise<void> {
+        // this.obj.position.copy(CannonVec3ToThreeVector3(this.body.position));
+        // this.obj.quaternion.copy(CannonQuaternionToThreeQuaternion(this.body.quaternion));
+
         const transform = this.obj;
     
         const movementSpeed = this.speed * delta;

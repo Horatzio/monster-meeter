@@ -162,7 +162,8 @@ class Engine {
           rotation,
           position,
           loader,
-          scale: characterScale
+          scale: characterScale,
+          camera: this.camera,
         });
       }));
 

@@ -10,10 +10,11 @@ interface CharacterLoadSettings {
     position: THREE.Vector3,
     loader: GLTFLoader,
     scale: number,
+    camera: THREE.Camera,
 }
 
 export class Character extends GameComponent {
-    public static async create({ name, rotation, position, loader, scale }: CharacterLoadSettings): Promise<Character> {
+    public static async create({ name, rotation, position, loader, scale, camera }: CharacterLoadSettings): Promise<Character> {
         const gltf = await loader.loadAsync(`models/gltf/${name}.gltf`);
         const obj = gltf.scene.children[0];
 
@@ -39,13 +40,38 @@ export class Character extends GameComponent {
         // Set the body's position to match the model's position
         boxBody.position.copy(ThreeVector3ToCannonVec3(obj.position));
 
+        // Set up an event listener for mouse movement
+
         const character = new Character();
         character.obj = obj;
         character.animation = mixer;
         character.body = boxBody;
         character.body.position.copy(new CANNON.Vec3(obj.position.x, obj.position.y, obj.position.z))
+        character.camera = camera;
+        window.addEventListener('mousemove', (event) => character.onMouseMove(event), false);
         return character;
     }
+
+    private camera: THREE.Camera;
+    private raycaster: THREE.Raycaster = new THREE.Raycaster();
+    private mouse: THREE.Vector2 =  new THREE.Vector2();
+
+    // Function to handle mouse movement
+    public onMouseMove(event: MouseEvent) {
+        // Calculate mouse position in normalized device coordinates (-1 to +1)
+        this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    
+        // Update the raycaster's picking ray based on the current mouse position
+        this.raycaster.setFromCamera(this.mouse, this.camera);
+    
+        // Calculate objects intersecting the picking ray
+        const intersects = this.raycaster.intersectObject(this.obj);
+    
+        if (intersects.length > 0) {
+            console.log('Mouse is hovering over the model');
+        };
+  }
 
     public update(delta: number): Promise<void> {
         // this.obj.position.copy(CannonVec3ToThreeVector3(this.body.position));

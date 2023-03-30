@@ -26,7 +26,10 @@ export class Player extends GameComponent {
         obj.castShadow = true;
         obj.receiveShadow = true;
 
-        controls.target = obj.position;
+        const cameraTarget = obj.position.clone();
+        cameraTarget.setY(cameraTarget.y + 5);
+
+        controls.target = cameraTarget;
         controls.update();
 
         const mixer = new THREE.AnimationMixer(obj);
@@ -52,6 +55,7 @@ export class Player extends GameComponent {
         player.animation = mixer;
         player.camera = camera;
         player.body = boxBody;
+        player.cameraTarget = cameraTarget;
         player.body.position.copy(new CANNON.Vec3(obj.position.x, obj.position.y, obj.position.z))
         window.addEventListener('keydown', (event) => player.onKeyDown(event));
         window.addEventListener('keyup', (event) => player.onKeyUp(event));
@@ -63,6 +67,7 @@ export class Player extends GameComponent {
     private speed: number = 50;
     private keysPressed: Set<string> = new Set();
     private targetPosition: THREE.Vector3 = new THREE.Vector3();
+    private cameraTarget: THREE.Vector3;
 
     private onKeyDown(event: KeyboardEvent): void {
         this.keysPressed.add(event.code);
@@ -130,6 +135,8 @@ export class Player extends GameComponent {
 
             // Update the player's position
             transform.position.copy(newPosition);
+            this.cameraTarget.setX(transform.position.x);
+            this.cameraTarget.setZ(transform.position.z);
         }
     }
 
